@@ -32,25 +32,24 @@ const state = {
 };
 
 function renderNav() {
-  // Desktop sidebar
-  document.getElementById("nav").innerHTML = state.nav.map(([id, icon, label]) =>
-    `<button class="nav-item \( {state.page === id ? "active" : ""}" onclick="go(' \){id}')">${icon} ${label}</button>`
-  ).join("");
+  document.getElementById("nav").innerHTML = state.nav.map(function(item) {
+    var id = item[0], icon = item[1], label = item[2];
+    var active = state.page === id ? "active" : "";
+    return '<button class="nav-item ' + active + '" onclick="go(\'' + id + '\')">' + icon + ' ' + label + '</button>';
+  }).join("");
 
-  // Mobile bottom nav
-  const mobileItems = [
+  var mobileItems = [
     ["dashboard", "⌂", "Home"],
     ["ride", "🚗", "Ride"],
     ["logistics", "📦", "Logistics"],
     ["market", "🚘", "Market"],
     ["garage", "🔧", "Garage"]
   ];
-  document.getElementById("bottomNav").innerHTML = mobileItems.map(([id, icon, label]) =>
-    `<button class="bottom-nav-item \( {state.page === id ? "active" : ""}" onclick="go(' \){id}')">
-      <span class="icon">${icon}</span>
-      <span>${label}</span>
-    </button>`
-  ).join("");
+  document.getElementById("bottomNav").innerHTML = mobileItems.map(function(item) {
+    var id = item[0], icon = item[1], label = item[2];
+    var active = state.page === id ? "active" : "";
+    return '<button class="bottom-nav-item ' + active + '" onclick="go(\'' + id + '\')"><span class="icon">' + icon + '</span><span>' + label + '</span></button>';
+  }).join("");
 }
 
 function go(page) {
@@ -61,7 +60,7 @@ function go(page) {
 }
 
 function render() {
-  const titles = {
+  var titles = {
     dashboard: ["Dashboard", "Mobility, logistics, automotive and garage services in one ecosystem."],
     ride: ["TRANSHUB Ride", "Book, track and manage passenger journeys."],
     logistics: ["Transport & Logistics", "Post loads, bargain with transporters and manage protected transactions."],
@@ -76,187 +75,107 @@ function render() {
   document.getElementById("content").innerHTML = pages[state.page]();
 }
 
-const pages = {
-  dashboard: () => `<div class="grid">
- ${metric("146", "Active trips", "Live mobility")}
- ${metric("32", "Open loads", "Logistics")}
- ${metric("84", "Vehicles listed", "Auto Market")}
- ${metric("18", "Garage jobs", "Services")}
-</div>
-<div class="section"><h2>What do you need today?</h2><div class="cards">
- ${service("🚗", "Book a Ride", "Request a driver and track the journey.", "go('ride')")}
- ${service("📦", "Move a Load", "Post cargo and receive transporter offers.", "go('logistics')")}
- ${service("🚘", "Buy / Sell Vehicle", "Browse listings or create a vehicle store.", "go('market')")}
- ${service("🔧", "Find a Mechanic", "Workshop or verified home service.", "go('garage')")}
- ${service("🏢", "Register Business", "Join TRANSHUB as company or agent.", "go('business')")}
- ${service("💬", "Customer Care", "Chat with TRANSHUB support and AI.", "go('messages')")}
-</div></div>
-<div class="section"><div class="card"><div class="row"><h2>Live trip</h2><span class="badge">● LIVE</span></div>${tripCard(state.trips[0])}</div></div>`,
-
-  ride: () => `<div class="grid-3">
-<div class="card">
-  <h2>Book a ride</h2>
-  <label>Pickup</label>
-  <input class="input" id="pickup" value="Nassarawa, Kano">
-  <label>Destination</label>
-  <input class="input" id="destination" value="Kano Central">
-  <label>Vehicle</label>
-  <select class="input">
-    <option>Economy</option>
-    <option>Comfort</option>
-    <option>XL</option>
-  </select>
-  <button class="btn" onclick="bookRide()">Find driver</button>
-</div>
-<div class="card" style="grid-column:span 2">
-  <div class="row"><h2>Live journey</h2><span class="badge">ON TRIP</span></div>
-  <div class="map">
-    <div class="road"></div>
-    <div class="route"></div>
-    <div class="pin a">📍</div>
-    <div class="pin b">🏁</div>
-    <div class="trip-box">
-      <b>8.4 km remaining</b><br>
-      <span class="muted">ETA 17 min • Driver: Musa Ibrahim</span>
-    </div>
-  </div>
-</div>
-</div>
-<div class="section"><div class="card"><h2>Current trip</h2>${tripCard(state.trips[0])}</div></div>`,
-
-  logistics: () => `<div class="row">
-  <div><h2>Loads marketplace</h2><p class="muted">Companies and agents post loads; transporters submit offers.</p></div>
-  <button class="btn" onclick="openLoad()">+ Post load</button>
-</div>
-<div class="section cards">${[
-    ["TH-L1001", "20 tonnes cement", "Kano → Abuja", "₦500,000", "3 offers"],
-    ["TH-L1002", "12 pallets food", "Kaduna → Lagos", "₦720,000", "5 offers"],
-    ["TH-L1003", "Furniture", "Kano → Kaduna", "₦180,000", "2 offers"]
-  ].map(x => `<div class="card">
-    <span class="badge gray">${x[0]}</span>
-    <h3>${x[1]}</h3>
-    <p>${x[2]}</p>
-    <b>${x[3]}</b>
-    <p class="muted">${x[4]}</p>
-    <button class="btn secondary" onclick="openOffer('${x[0]}')">View & bargain</button>
-  </div>`).join("")}</div>`,
-
-  market: () => `<div class="row">
-  <div><h2>Vehicle marketplace</h2><p class="muted">Buyer • Seller • Facilitator • Store</p></div>
-  <button class="btn" onclick="openListing()">+ List vehicle</button>
-</div>
-<div class="section cards">${state.listings.map(v => `<div class="card">
-  <span class="\( {v.verified ? "badge" : "badge orange"}"> \){v.verified ? "✓ VERIFIED" : "Pending review"}</span>
-  <h3>${v.name}</h3>
-  <p class="muted">${v.city} • ${v.seller}</p>
-  <div class="metric" style="font-size:20px">${v.price}</div>
-  <button class="btn secondary" onclick="openVehicle('${v.name}')">View vehicle</button>
-</div>`).join("")}</div>
-<div class="section"><div class="card">
-  <div class="row">
-    <div><h2>Seller stores</h2><p class="muted">Custom storefronts for dealers and facilitators.</p></div>
-    <button class="btn" onclick="openStore()">Create store</button>
-  </div>
-</div></div>`,
-
-  garage: () => `<div class="row">
-  <div><h2>Verified mechanics</h2><p class="muted">Workshop and home/roadside services.</p></div>
-  <button class="btn" onclick="openMechanic()">Register as mechanic</button>
-</div>
-<div class="section cards">${state.mechanics.map(m => `<div class="card">
-  <span class="badge">✓ Verified</span>
-  <h3>${m.name}</h3>
-  <p>${m.skills}</p>
-  <p>⭐ ${m.rating} ${m.home ? "• Home service" : "• Workshop"}</p>
-  <button class="btn" onclick="bookMechanic('${m.name}')">Request service</button>
-</div>`).join("")}</div>`,
-
-  business: () => `<div class="grid-3">${[
-    ["🚚", "Transport company", "Register fleet, drivers and loads."],
-    ["🔧", "Repair company", "Register workshops and mechanics."],
-    ["🚘", "Vehicle dealer", "Create a store and manage inventory."],
-    ["🤝", "Facilitator / Agent", "Represent customers or businesses."],
-    ["📅", "Booking company", "Connect your booking service to TRANSHUB."],
-    ["🏢", "Other partner", "Use TRANSHUB as your digital technology/agency platform."]
-  ].map(x => `<div class="card service" onclick="openBusiness('${x[1]}')">
-    <div class="icon">${x[0]}</div>
-    <h3>${x[1]}</h3>
-    <p class="muted">${x[2]}</p>
-    <button class="btn secondary">Register</button>
-  </div>`).join("")}</div>`,
-
-  messages: () => `<div class="grid-3">
-<div class="card">
-  <h2>Conversations</h2>
-  <button class="nav-item active" style="color:#fff" onclick="chat('TRANSHUB Admin')">🛡️ TRANSHUB Admin</button>
-  <button class="nav-item" onclick="chat('Musa Ibrahim — Driver')">🚗 Musa Ibrahim — Driver</button>
-  <button class="nav-item" onclick="chat('ABC Motors — Seller')">🚘 ABC Motors — Seller</button>
-  <button class="nav-item" onclick="chat('Logistics Agent')">📦 Logistics Agent</button>
-</div>
-<div class="card" style="grid-column:span 2">
-  <h2>TRANSHUB Admin</h2>
-  <div class="chat" id="chat">
-    <div class="msg">Welcome to TRANSHUB support. How can we assist?</div>
-    <div class="msg me">I need help with my current trip.</div>
-    <div class="msg">Your trip TH-10482 is active. Remaining distance is 8.4 km.</div>
-  </div>
-  <div class="row" style="margin-top:10px">
-    <input class="input" id="chatInput" placeholder="Write a message...">
-    <button class="btn" onclick="sendMsg()">Send</button>
-  </div>
-</div>
-</div>`,
-
-  control: () => `<div class="grid">
- ${metric("146", "Live trips", "GPS monitoring")}
- ${metric("3", "Risk alerts", "AI flagged")}
- ${metric("7", "Documents", "Expiring soon")}
- ${metric("2", "Disputes", "Human review")}
-</div>
-<div class="section grid-3">
-  <div class="card">
-    <h2>🤖 AI Operations Agent</h2>
-    <p>AI summarizes incidents, flags anomalies and recommends next actions.</p>
-    <button class="btn" onclick="openAI()">Open AI Control</button>
-  </div>
-  <div class="card">
-    <h2>🛡️ Verification</h2>
-    <p>Driver, vehicle, mechanic and business verification queue.</p>
-    <button class="btn secondary" onclick="toast('Verification queue opened')">Review queue</button>
-  </div>
-  <div class="card">
-    <h2>💰 Transactions</h2>
-    <p>Protected transaction states and payment-provider events.</p>
-    <button class="btn secondary" onclick="toast('Transaction ledger opened')">Open ledger</button>
-  </div>
-</div>
-<div class="section card">
-  <h2>Recent alerts</h2>
-  <table class="table">
-    <tr><th>Type</th><th>Reference</th><th>Status</th></tr>
-    <tr><td>Document expiry</td><td>Driver TH-D882</td><td><span class="badge orange">7 days</span></td></tr>
-    <tr><td>Vehicle listing review</td><td>VH-7811</td><td><span class="badge orange">Review</span></td></tr>
-    <tr><td>Trip anomaly</td><td>TH-10482</td><td><span class="badge">Resolved</span></td></tr>
-  </table>
-</div>`
-};
-
 function metric(n, t, s) {
-  return `<div class="card"><div class="muted">\( {t}</div><div class="metric"> \){n}</div><div class="muted">${s}</div></div>`;
+  return '<div class="card"><div class="muted">' + t + '</div><div class="metric">' + n + '</div><div class="muted">' + s + '</div></div>';
 }
+
 function service(i, t, d, a) {
-  return `<div class="card service" onclick="\( {a}"><div class="icon"> \){i}</div><h3>\( {t}</h3><p class="muted"> \){d}</p><button class="btn secondary">Open</button></div>`;
+  return '<div class="card service" onclick="' + a + '"><div class="icon">' + i + '</div><h3>' + t + '</h3><p class="muted">' + d + '</p><button class="btn secondary">Open</button></div>';
 }
+
 function tripCard(t) {
-  return `<div class="row">
-    <div><b>${t.from} → \( {t.to}</b><p class="muted"> \){t.driver} • ${t.vehicle}</p></div>
-    <div style="text-align:right"><b>\( {t.remain}</b><p class="muted"> \){t.status}</p></div>
-  </div>
-  <div style="margin-top:13px">
-    <button class="btn secondary" onclick="chat('Musa Ibrahim — Driver')">Chat driver</button>
-    <button class="btn secondary" onclick="toast('Trip shared with emergency contact (demo)')">Share trip</button>
-  </div>`;
+  return '<div class="row"><div><b>' + t.from + ' → ' + t.to + '</b><p class="muted">' + t.driver + ' • ' + t.vehicle + '</p></div><div style="text-align:right"><b>' + t.remain + '</b><p class="muted">' + t.status + '</p></div></div><div style="margin-top:13px"><button class="btn secondary" onclick="chat(\'Musa Ibrahim — Driver\')">Chat driver</button> <button class="btn secondary" onclick="toast(\'Trip shared with emergency contact (demo)\')">Share trip</button></div>';
 }
+
+var pages = {
+  dashboard: function() {
+    return '<div class="grid">' +
+      metric("146", "Active trips", "Live mobility") +
+      metric("32", "Open loads", "Logistics") +
+      metric("84", "Vehicles listed", "Auto Market") +
+      metric("18", "Garage jobs", "Services") +
+      '</div><div class="section"><h2>What do you need today?</h2><div class="cards">' +
+      service("🚗", "Book a Ride", "Request a driver and track the journey.", "go('ride')") +
+      service("📦", "Move a Load", "Post cargo and receive transporter offers.", "go('logistics')") +
+      service("🚘", "Buy / Sell Vehicle", "Browse listings or create a vehicle store.", "go('market')") +
+      service("🔧", "Find a Mechanic", "Workshop or verified home service.", "go('garage')") +
+      service("🏢", "Register Business", "Join TRANSHUB as company or agent.", "go('business')") +
+      service("💬", "Customer Care", "Chat with TRANSHUB support and AI.", "go('messages')") +
+      '</div></div><div class="section"><div class="card"><div class="row"><h2>Live trip</h2><span class="badge">● LIVE</span></div>' + tripCard(state.trips[0]) + '</div></div>';
+  },
+
+  ride: function() {
+    return '<div class="grid-3"><div class="card"><h2>Book a ride</h2><label>Pickup</label><input class="input" id="pickup" value="Nassarawa, Kano"><label>Destination</label><input class="input" id="destination" value="Kano Central"><label>Vehicle</label><select class="input"><option>Economy</option><option>Comfort</option><option>XL</option></select><button class="btn" onclick="bookRide()">Find driver</button></div><div class="card" style="grid-column:span 2"><div class="row"><h2>Live journey</h2><span class="badge">ON TRIP</span></div><div class="map"><div class="road"></div><div class="route"></div><div class="pin a">📍</div><div class="pin b">🏁</div><div class="trip-box"><b>8.4 km remaining</b><br><span class="muted">ETA 17 min • Driver: Musa Ibrahim</span></div></div></div></div><div class="section"><div class="card"><h2>Current trip</h2>' + tripCard(state.trips[0]) + '</div></div>';
+  },
+
+  logistics: function() {
+    var loads = [
+      ["TH-L1001", "20 tonnes cement", "Kano → Abuja", "₦500,000", "3 offers"],
+      ["TH-L1002", "12 pallets food", "Kaduna → Lagos", "₦720,000", "5 offers"],
+      ["TH-L1003", "Furniture", "Kano → Kaduna", "₦180,000", "2 offers"]
+    ];
+    var html = '<div class="row"><div><h2>Loads marketplace</h2><p class="muted">Companies and agents post loads; transporters submit offers.</p></div><button class="btn" onclick="openLoad()">+ Post load</button></div><div class="section cards">';
+    for (var i = 0; i < loads.length; i++) {
+      var x = loads[i];
+      html += '<div class="card"><span class="badge gray">' + x[0] + '</span><h3>' + x[1] + '</h3><p>' + x[2] + '</p><b>' + x[3] + '</b><p class="muted">' + x[4] + '</p><button class="btn secondary" onclick="openOffer(\'' + x[0] + '\')">View & bargain</button></div>';
+    }
+    html += '</div>';
+    return html;
+  },
+
+  market: function() {
+    var html = '<div class="row"><div><h2>Vehicle marketplace</h2><p class="muted">Buyer • Seller • Facilitator • Store</p></div><button class="btn" onclick="openListing()">+ List vehicle</button></div><div class="section cards">';
+    for (var i = 0; i < state.listings.length; i++) {
+      var v = state.listings[i];
+      var badge = v.verified ? '<span class="badge">✓ VERIFIED</span>' : '<span class="badge orange">Pending review</span>';
+      html += '<div class="card">' + badge + '<h3>' + v.name + '</h3><p class="muted">' + v.city + ' • ' + v.seller + '</p><div class="metric" style="font-size:20px">' + v.price + '</div><button class="btn secondary" onclick="openVehicle(\'' + v.name + '\')">View vehicle</button></div>';
+    }
+    html += '</div><div class="section"><div class="card"><div class="row"><div><h2>Seller stores</h2><p class="muted">Custom storefronts for dealers and facilitators.</p></div><button class="btn" onclick="openStore()">Create store</button></div></div></div>';
+    return html;
+  },
+
+  garage: function() {
+    var html = '<div class="row"><div><h2>Verified mechanics</h2><p class="muted">Workshop and home/roadside services.</p></div><button class="btn" onclick="openMechanic()">Register as mechanic</button></div><div class="section cards">';
+    for (var i = 0; i < state.mechanics.length; i++) {
+      var m = state.mechanics[i];
+      var home = m.home ? "• Home service" : "• Workshop";
+      html += '<div class="card"><span class="badge">✓ Verified</span><h3>' + m.name + '</h3><p>' + m.skills + '</p><p>⭐ ' + m.rating + ' ' + home + '</p><button class="btn" onclick="bookMechanic(\'' + m.name + '\')">Request service</button></div>';
+    }
+    html += '</div>';
+    return html;
+  },
+
+  business: function() {
+    var items = [
+      ["🚚", "Transport company", "Register fleet, drivers and loads."],
+      ["🔧", "Repair company", "Register workshops and mechanics."],
+      ["🚘", "Vehicle dealer", "Create a store and manage inventory."],
+      ["🤝", "Facilitator / Agent", "Represent customers or businesses."],
+      ["📅", "Booking company", "Connect your booking service to TRANSHUB."],
+      ["🏢", "Other partner", "Use TRANSHUB as your digital technology/agency platform."]
+    ];
+    var html = '<div class="grid-3">';
+    for (var i = 0; i < items.length; i++) {
+      var x = items[i];
+      html += '<div class="card service" onclick="openBusiness(\'' + x[1] + '\')"><div class="icon">' + x[0] + '</div><h3>' + x[1] + '</h3><p class="muted">' + x[2] + '</p><button class="btn secondary">Register</button></div>';
+    }
+    html += '</div>';
+    return html;
+  },
+
+  messages: function() {
+    return '<div class="grid-3"><div class="card"><h2>Conversations</h2><button class="nav-item active" style="color:#fff" onclick="chat(\'TRANSHUB Admin\')">🛡️ TRANSHUB Admin</button><button class="nav-item" onclick="chat(\'Musa Ibrahim — Driver\')">🚗 Musa Ibrahim — Driver</button><button class="nav-item" onclick="chat(\'ABC Motors — Seller\')">🚘 ABC Motors — Seller</button><button class="nav-item" onclick="chat(\'Logistics Agent\')">📦 Logistics Agent</button></div><div class="card" style="grid-column:span 2"><h2>TRANSHUB Admin</h2><div class="chat" id="chat"><div class="msg">Welcome to TRANSHUB support. How can we assist?</div><div class="msg me">I need help with my current trip.</div><div class="msg">Your trip TH-10482 is active. Remaining distance is 8.4 km.</div></div><div class="row" style="margin-top:10px"><input class="input" id="chatInput" placeholder="Write a message..."><button class="btn" onclick="sendMsg()">Send</button></div></div></div>';
+  },
+
+  control: function() {
+    return '<div class="grid">' +
+      metric("146", "Live trips", "GPS monitoring") +
+      metric("3", "Risk alerts", "AI flagged") +
+      metric("7", "Documents", "Expiring soon") +
+      metric("2", "Disputes", "Human review") +
+      '</div><div class="section grid-3"><div class="card"><h2>🤖 AI Operations Agent</h2><p>AI summarizes incidents, flags anomalies and recommends next actions.</p><button class="btn" onclick="openAI()">Open AI Control</button></div><div class="card"><h2>🛡️ Verification</h2><p>Driver, vehicle, mechanic and business verification queue.</p><button class="btn secondary" onclick="toast(\'Verification queue opened\')">Review queue</button></div><div class="card"><h2>💰 Transactions</h2><p>Protected transaction states and payment-provider events.</p><button class="btn secondary" onclick="toast(\'Transaction ledger opened\')">Open ledger</button></div></div><div class="section card"><h2>Recent alerts</h2><table class="table"><tr><th>Type</th><th>Reference</th><th>Status</th></tr><tr><td>Document expiry</td><td>Driver TH-D882</td><td><span class="badge orange">7 days</span></td></tr><tr><td>Vehicle listing review</td><td>VH-7811</td><td><span class="badge orange">Review</span></td></tr><tr><td>Trip anomaly</td><td>TH-10482</td><td><span class="badge">Resolved</span></td></tr></table></div>';
+  }
+};
 
 function modal(html) {
   document.getElementById("modalContent").innerHTML = html;
@@ -266,118 +185,78 @@ function closeModal() {
   document.getElementById("modal").classList.add("hidden");
 }
 function openAI() {
-  modal(`<h2>✦ TRANSHUB AI Agent</h2>
-    <p class="muted">Prototype assistant — production version will connect to your AI backend and permission system.</p>
-    <input class="input" id="aiInput" placeholder="Ask about a trip, vehicle, load or garage service">
-    <button class="btn" onclick="aiAnswer()">Ask AI</button>
-    <div id="aiOut" style="margin-top:15px"></div>`);
+  modal('<h2>✦ TRANSHUB AI Agent</h2><p class="muted">Prototype assistant — production version will connect to your AI backend and permission system.</p><input class="input" id="aiInput" placeholder="Ask about a trip, vehicle, load or garage service"><button class="btn" onclick="aiAnswer()">Ask AI</button><div id="aiOut" style="margin-top:15px"></div>');
 }
 function aiAnswer() {
-  const q = document.getElementById("aiInput").value.toLowerCase();
-  let a = q.includes("trip")
-    ? "Trip TH-10482 is active with 8.4 km remaining and an estimated 17-minute arrival."
-    : q.includes("vehicle")
-    ? "I can help compare vehicle listings, verification status and seller stores."
-    : q.includes("load")
-    ? "There are 3 sample loads. Open Logistics to review transporter offers and bargain."
-    : q.includes("mechanic")
-    ? "There are 3 verified mechanics in the prototype, including home-service providers."
-    : "I can assist with rides, logistics, vehicles, garage services, verification and customer support.";
-  document.getElementById("aiOut").innerHTML = `<div class="card">${a}</div>`;
+  var q = document.getElementById("aiInput").value.toLowerCase();
+  var a = "I can assist with rides, logistics, vehicles, garage services, verification and customer support.";
+  if (q.indexOf("trip") !== -1) a = "Trip TH-10482 is active with 8.4 km remaining and an estimated 17-minute arrival.";
+  else if (q.indexOf("vehicle") !== -1) a = "I can help compare vehicle listings, verification status and seller stores.";
+  else if (q.indexOf("load") !== -1) a = "There are 3 sample loads. Open Logistics to review transporter offers and bargain.";
+  else if (q.indexOf("mechanic") !== -1) a = "There are 3 verified mechanics in the prototype, including home-service providers.";
+  document.getElementById("aiOut").innerHTML = '<div class="card">' + a + '</div>';
 }
 function bookRide() {
   toast("Driver search started — demo driver matched: Musa Ibrahim");
   go("ride");
 }
 function openLoad() {
-  modal(`<h2>Post a load</h2>
-    <label>Cargo</label><input class="input" placeholder="e.g. 20 tonnes cement">
-    <label>Pickup → Destination</label><input class="input" placeholder="Kano → Abuja">
-    <label>Budget</label><input class="input" placeholder="₦500,000">
-    <button class="btn" onclick="closeModal();toast('Load posted — transporters can now bargain')">Post load</button>`);
+  modal('<h2>Post a load</h2><label>Cargo</label><input class="input" placeholder="e.g. 20 tonnes cement"><label>Pickup → Destination</label><input class="input" placeholder="Kano → Abuja"><label>Budget</label><input class="input" placeholder="₦500,000"><button class="btn" onclick="closeModal();toast(\'Load posted — transporters can now bargain\')">Post load</button>');
 }
 function openOffer(id) {
-  modal(`<h2>${id} — Offers</h2>
-    <p>Current company budget: <b>₦500,000</b></p>
-    <div class="card"><b>Transporter A</b><p>Offer: ₦470,000</p>
-      <button class="btn secondary" onclick="toast('Counter-offer sent');closeModal()">Counter ₦450,000</button>
-    </div>
-    <div class="card"><b>Transporter B</b><p>Offer: ₦485,000</p>
-      <button class="btn" onclick="toast('Offer accepted — protected transaction created');closeModal()">Accept</button>
-    </div>`);
+  modal('<h2>' + id + ' — Offers</h2><p>Current company budget: <b>₦500,000</b></p><div class="card"><b>Transporter A</b><p>Offer: ₦470,000</p><button class="btn secondary" onclick="toast(\'Counter-offer sent\');closeModal()">Counter ₦450,000</button></div><div class="card"><b>Transporter B</b><p>Offer: ₦485,000</p><button class="btn" onclick="toast(\'Offer accepted — protected transaction created\');closeModal()">Accept</button></div>');
 }
 function openListing() {
-  modal(`<h2>List a vehicle</h2>
-    <input class="input" placeholder="Make / model / year">
-    <input class="input" placeholder="Price">
-    <input class="input" placeholder="Location">
-    <button class="btn" onclick="closeModal();toast('Vehicle submitted for verification')">Submit listing</button>`);
+  modal('<h2>List a vehicle</h2><input class="input" placeholder="Make / model / year"><input class="input" placeholder="Price"><input class="input" placeholder="Location"><button class="btn" onclick="closeModal();toast(\'Vehicle submitted for verification\')">Submit listing</button>');
 }
 function openVehicle(n) {
-  modal(`<h2>${n}</h2>
-    <span class="badge">Vehicle listing</span>
-    <p>Photos, video, specifications and verification details would appear here.</p>
-    <div class="card">
-      <b>Protected purchase</b>
-      <p class="muted">Demo flow: offer → payment secured → inspection → buyer confirmation → release.</p>
-      <button class="btn" onclick="toast('Protected transaction created (demo)');closeModal()">Make offer</button>
-    </div>`);
+  modal('<h2>' + n + '</h2><span class="badge">Vehicle listing</span><p>Photos, video, specifications and verification details would appear here.</p><div class="card"><b>Protected purchase</b><p class="muted">Demo flow: offer → payment secured → inspection → buyer confirmation → release.</p><button class="btn" onclick="toast(\'Protected transaction created (demo)\');closeModal()">Make offer</button></div>');
 }
 function openStore() {
-  modal(`<h2>Create vehicle store</h2>
-    <input class="input" placeholder="Store name">
-    <input class="input" placeholder="Business description">
-    <input class="input" placeholder="Workshop/dealership address">
-    <button class="btn" onclick="closeModal();toast('Store created in demo mode')">Create store</button>`);
+  modal('<h2>Create vehicle store</h2><input class="input" placeholder="Store name"><input class="input" placeholder="Business description"><input class="input" placeholder="Workshop/dealership address"><button class="btn" onclick="closeModal();toast(\'Store created in demo mode\')">Create store</button>');
 }
 function openMechanic() {
-  modal(`<h2>Mechanic / E-Garage registration</h2>
-    <input class="input" placeholder="Mechanic or company name">
-    <input class="input" placeholder="Expertise">
-    <input class="input" placeholder="Workshop address">
-    <button class="btn" onclick="closeModal();toast('Mechanic profile submitted for verification')">Register</button>`);
+  modal('<h2>Mechanic / E-Garage registration</h2><input class="input" placeholder="Mechanic or company name"><input class="input" placeholder="Expertise"><input class="input" placeholder="Workshop address"><button class="btn" onclick="closeModal();toast(\'Mechanic profile submitted for verification\')">Register</button>');
 }
 function bookMechanic(n) {
-  modal(`<h2>Request service</h2>
-    <p><b>${n}</b></p>
-    <select class="input">
-      <option>Workshop service</option>
-      <option>Home service</option>
-      <option>Roadside assistance</option>
-    </select>
-    <input class="input" placeholder="Describe the problem">
-    <button class="btn" onclick="closeModal();toast('Service request sent to mechanic')">Request</button>`);
+  modal('<h2>Request service</h2><p><b>' + n + '</b></p><select class="input"><option>Workshop service</option><option>Home service</option><option>Roadside assistance</option></select><input class="input" placeholder="Describe the problem"><button class="btn" onclick="closeModal();toast(\'Service request sent to mechanic\')">Request</button>');
 }
 function openBusiness(n) {
-  modal(`<h2>${n} registration</h2>
-    <input class="input" placeholder="Company / agent name">
-    <input class="input" placeholder="Phone / email">
-    <input class="input" placeholder="Business address">
-    <button class="btn" onclick="closeModal();toast('Registration submitted for verification')">Submit</button>`);
+  modal('<h2>' + n + ' registration</h2><input class="input" placeholder="Company / agent name"><input class="input" placeholder="Phone / email"><input class="input" placeholder="Business address"><button class="btn" onclick="closeModal();toast(\'Registration submitted for verification\')">Submit</button>');
 }
 function chat(name) {
-  toast(`Opened conversation: ${name}`);
+  toast("Opened conversation: " + name);
 }
 function sendMsg() {
-  const i = document.getElementById("chatInput"), v = i.value.trim();
+  var i = document.getElementById("chatInput");
+  var v = i.value.trim();
   if (!v) return;
-  document.getElementById("chat").innerHTML += `<div class="msg me">${v}</div>`;
+  document.getElementById("chat").innerHTML += '<div class="msg me">' + v + '</div>';
   i.value = "";
-  setTimeout(() => document.getElementById("chat").innerHTML += `<div class="msg">Thanks. TRANSHUB support has received your message.</div>`, 400);
+  setTimeout(function() {
+    document.getElementById("chat").innerHTML += '<div class="msg">Thanks. TRANSHUB support has received your message.</div>';
+  }, 400);
 }
 function toast(t) {
-  const d = document.createElement("div");
+  var d = document.createElement("div");
   d.textContent = t;
-  Object.assign(d.style, {
-    position: "fixed", right: "20px", bottom: "90px",
-    background: "#172033", color: "#fff",
-    padding: "13px 17px", borderRadius: "10px", zIndex: 20,
-    maxWidth: "80%", fontSize: "14px"
-  });
+  d.style.position = "fixed";
+  d.style.right = "20px";
+  d.style.bottom = "90px";
+  d.style.background = "#172033";
+  d.style.color = "#fff";
+  d.style.padding = "13px 17px";
+  d.style.borderRadius = "10px";
+  d.style.zIndex = "20";
+  d.style.maxWidth = "80%";
+  d.style.fontSize = "14px";
   document.body.appendChild(d);
-  setTimeout(() => d.remove(), 2600);
+  setTimeout(function() { d.remove(); }, 2600);
 }
 
 // Start the app
 renderNav();
 render();
+
+
+
