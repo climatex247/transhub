@@ -1,7 +1,7 @@
 // ========== SUPABASE CONFIG ==========
-const SUPABASE_URL = "https://lemvtzisfvsnmmlluxau.supabase.co";
-const SUPABASE_KEY = "sb_publishable_Q_YSS7a4-hnIPvGiDJTnXQ_OeZhQeCd";
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+//const SUPABASE_URL = "https://lemvtzisfvsnmmlluxau.supabase.co";
+//const SUPABASE_KEY = "sb_publishable_Q_YSS7a4-hnIPvGiDJTnXQ_OeZhQeCd";
+//const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ========== STATE ==========
 const state = {
@@ -371,4 +371,5 @@ function toast(t) {
 }
 
 // Start the app
-checkSession();
+// checkSession();
+showLogin();
