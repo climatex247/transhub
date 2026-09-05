@@ -1,6 +1,6 @@
 // ========== SUPABASE CONFIG ==========
 const SUPABASE_URL = "https://lemvtzisfvsnmmlluxau.supabase.co";
-const SUPABASE_KEY = "sb_publishable_rV-w5ccB6pNLbbixZHBsVQ_TmaaCXoq";
+const SUPABASE_KEY = "sb_publishable_Q_YSS7a4-hnIPvGiDJTnXQ_OeZhQeCd";
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ========== STATE ==========
@@ -102,7 +102,6 @@ async function doLogout() {
   document.getElementById("authScreen").style.display = "flex";
   showLogin();
 }
-
 // ========== PROFILE / KYC ==========
 async function loadProfile() {
   var { data, error } = await supabase
@@ -151,14 +150,14 @@ function updateKycFields() {
     html = '<label>NIN Number</label><input class="input" id="kycNin" placeholder="Enter your NIN">';
   } else if (role === "mechanic") {
     html = '<label>NIN Number</label><input class="input" id="kycNin" placeholder="Enter your NIN">' +
-           '<label>Trade Test Certificate (link or description)</label><input class="input" id="kycTrade" placeholder="Certificate details">' +
-           '<label>Garage Photo URL or description</label><input class="input" id="kycGarage" placeholder="Photo link or location description">';
+           '<label>Trade Test Certificate</label><input class="input" id="kycTrade" placeholder="Certificate details">' +
+           '<label>Garage Photo / Location</label><input class="input" id="kycGarage" placeholder="Photo link or description">';
   } else if (role === "seller" || role === "agent") {
     html = '<label>NIN Number</label><input class="input" id="kycNin" placeholder="Enter your NIN">' +
-           '<label>CAC Number (if company)</label><input class="input" id="kycCac" placeholder="CAC number">' +
-           '<label>Shop / Vehicle Photo description</label><input class="input" id="kycShop" placeholder="Photo or location description">';
+           '<label>CAC Number</label><input class="input" id="kycCac" placeholder="CAC number">' +
+           '<label>Shop / Vehicle Photo</label><input class="input" id="kycShop" placeholder="Photo or location description">';
   } else if (role === "transport_company" || role === "driver") {
-    html = '<label>NIN Number (MD or Driver)</label><input class="input" id="kycNin" placeholder="Enter NIN">' +
+    html = '<label>NIN Number</label><input class="input" id="kycNin" placeholder="Enter NIN">' +
            '<label>Company CAC Number</label><input class="input" id="kycCac" placeholder="CAC number">' +
            '<label>Operating Papers / Notes</label><input class="input" id="kycNote" placeholder="Documents description">';
   }
@@ -198,13 +197,12 @@ async function submitKyc() {
   if (error) {
     msg.textContent = "Error: " + error.message;
   } else {
-    msg.textContent = "KYC submitted successfully! Status: Pending";
+    msg.textContent = "KYC submitted! Status: Pending";
     state.profile = payload;
     setTimeout(showApp, 1500);
   }
 }
 
-// ========== CHECK SESSION ==========
 async function checkSession() {
   var session = await supabase.auth.getSession();
   if (session.data.session) {
@@ -212,7 +210,6 @@ async function checkSession() {
     await loadProfile();
   }
 }
-
 // ========== UI ==========
 function renderNav() {
   document.getElementById("nav").innerHTML = state.nav.map(function(item) {
@@ -373,5 +370,5 @@ function toast(t) {
   setTimeout(function() { d.remove(); }, 2600);
 }
 
-// Start
+// Start the app
 checkSession();
