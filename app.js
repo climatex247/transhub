@@ -1,5 +1,13 @@
+// ========== SUPABASE CONFIG ==========
+const SUPABASE_URL = "https://lemvtzisfvsnmmlluxau.supabase.co";
+const SUPABASE_KEY = "sb_publishable_rV-w5ccB6pNLbbixZHBsVQ_TmaaCXoq";
+
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ========== STATE ==========
 const state = {
   page: "dashboard",
+  user: null,
   nav: [
     ["dashboard", "⌂", "Dashboard"],
     ["ride", "🚗", "Ride"],
@@ -31,6 +39,108 @@ const state = {
   ]
 };
 
+// ========== AUTH FUNCTIONS ==========
+function showLogin() {
+  document.getElementById("loginForm").style.display = "block";
+  document.getElementById("registerForm").style.display = "none";
+  document.getElementById("tabLogin").className = "btn";
+  document.getElementById("tabRegister").className = "btn secondary";
+  document.getElementById("authMessage").textContent = "";
+}
+
+function showRegister() {
+  document.getElementById("loginForm").style.display = "none";
+  document.getElementById("registerForm").style.display = "block";
+  document.getElementById("tabLogin").className = "btn secondary";
+  document.getElementById("tabRegister").className = "btn";
+  document.getElementById("authMessage").textContent = "";
+}
+
+async function doLogin() {
+  var email = document.getElementById("loginEmail").value.trim();
+  var password = document.getElementById("loginPassword").value;
+  var msg = document.getElementById("authMessage");
+
+  if (!email || !password) {
+    msg.textContent = "Please enter email and password";
+    return;
+  }
+
+  msg.textContent = "Logging in...";
+
+  var result = await supabase.auth.signInWithPassword({
+    email: email,
+    password: password
+  });
+
+  if (result.error) {
+    msg.textContent = result.error.message;
+  } else {
+    state.user = result.data.user;
+    showApp();
+  }
+}
+
+async function doRegister() {
+  var name = document.getElementById("regName").value.trim();
+  var email = document.getElementById("regEmail").value.trim();
+  var password = document.getElementById("regPassword").value;
+  var msg = document.getElementById("authMessage");
+
+  if (!name || !email || !password) {
+    msg.textContent = "Please fill all fields";
+    return;
+  }
+  if (password.length < 6) {
+    msg.textContent = "Password must be at least 6 characters";
+    return;
+  }
+
+  msg.textContent = "Creating account...";
+
+  var result = await supabase.auth.signUp({
+    email: email,
+    password: password,
+    options: { data: { full_name: name } }
+  });
+
+  if (result.error) {
+    msg.textContent = result.error.message;
+  } else {
+    msg.textContent = "Account created! You can now login.";
+    showLogin();
+  }
+}
+
+async function doLogout() {
+  await supabase.auth.signOut();
+  state.user = null;
+  document.getElementById("app").style.display = "none";
+  document.getElementById("bottomNav").style.display = "none";
+  document.getElementById("authScreen").style.display = "flex";
+  showLogin();
+}
+
+function showApp() {
+  document.getElementById("authScreen").style.display = "none";
+  document.getElementById("app").style.display = "block";
+  if (window.innerWidth <= 700) {
+    document.getElementById("bottomNav").style.display = "flex";
+  }
+  renderNav();
+  render();
+}
+
+// Check if user is already logged in
+async function checkSession() {
+  var session = await supabase.auth.getSession();
+  if (session.data.session) {
+    state.user = session.data.session.user;
+    showApp();
+  }
+}
+
+// ========== UI FUNCTIONS ==========
 function renderNav() {
   document.getElementById("nav").innerHTML = state.nav.map(function(item) {
     var id = item[0], icon = item[1], label = item[2];
@@ -103,11 +213,9 @@ var pages = {
       service("💬", "Customer Care", "Chat with TRANSHUB support and AI.", "go('messages')") +
       '</div></div><div class="section"><div class="card"><div class="row"><h2>Live trip</h2><span class="badge">● LIVE</span></div>' + tripCard(state.trips[0]) + '</div></div>';
   },
-
   ride: function() {
     return '<div class="grid-3"><div class="card"><h2>Book a ride</h2><label>Pickup</label><input class="input" id="pickup" value="Nassarawa, Kano"><label>Destination</label><input class="input" id="destination" value="Kano Central"><label>Vehicle</label><select class="input"><option>Economy</option><option>Comfort</option><option>XL</option></select><button class="btn" onclick="bookRide()">Find driver</button></div><div class="card" style="grid-column:span 2"><div class="row"><h2>Live journey</h2><span class="badge">ON TRIP</span></div><div class="map"><div class="road"></div><div class="route"></div><div class="pin a">📍</div><div class="pin b">🏁</div><div class="trip-box"><b>8.4 km remaining</b><br><span class="muted">ETA 17 min • Driver: Musa Ibrahim</span></div></div></div></div><div class="section"><div class="card"><h2>Current trip</h2>' + tripCard(state.trips[0]) + '</div></div>';
   },
-
   logistics: function() {
     var loads = [
       ["TH-L1001", "20 tonnes cement", "Kano → Abuja", "₦500,000", "3 offers"],
@@ -122,7 +230,6 @@ var pages = {
     html += '</div>';
     return html;
   },
-
   market: function() {
     var html = '<div class="row"><div><h2>Vehicle marketplace</h2><p class="muted">Buyer • Seller • Facilitator • Store</p></div><button class="btn" onclick="openListing()">+ List vehicle</button></div><div class="section cards">';
     for (var i = 0; i < state.listings.length; i++) {
@@ -133,7 +240,6 @@ var pages = {
     html += '</div><div class="section"><div class="card"><div class="row"><div><h2>Seller stores</h2><p class="muted">Custom storefronts for dealers and facilitators.</p></div><button class="btn" onclick="openStore()">Create store</button></div></div></div>';
     return html;
   },
-
   garage: function() {
     var html = '<div class="row"><div><h2>Verified mechanics</h2><p class="muted">Workshop and home/roadside services.</p></div><button class="btn" onclick="openMechanic()">Register as mechanic</button></div><div class="section cards">';
     for (var i = 0; i < state.mechanics.length; i++) {
@@ -144,7 +250,6 @@ var pages = {
     html += '</div>';
     return html;
   },
-
   business: function() {
     var items = [
       ["🚚", "Transport company", "Register fleet, drivers and loads."],
@@ -162,11 +267,9 @@ var pages = {
     html += '</div>';
     return html;
   },
-
   messages: function() {
     return '<div class="grid-3"><div class="card"><h2>Conversations</h2><button class="nav-item active" style="color:#fff" onclick="chat(\'TRANSHUB Admin\')">🛡️ TRANSHUB Admin</button><button class="nav-item" onclick="chat(\'Musa Ibrahim — Driver\')">🚗 Musa Ibrahim — Driver</button><button class="nav-item" onclick="chat(\'ABC Motors — Seller\')">🚘 ABC Motors — Seller</button><button class="nav-item" onclick="chat(\'Logistics Agent\')">📦 Logistics Agent</button></div><div class="card" style="grid-column:span 2"><h2>TRANSHUB Admin</h2><div class="chat" id="chat"><div class="msg">Welcome to TRANSHUB support. How can we assist?</div><div class="msg me">I need help with my current trip.</div><div class="msg">Your trip TH-10482 is active. Remaining distance is 8.4 km.</div></div><div class="row" style="margin-top:10px"><input class="input" id="chatInput" placeholder="Write a message..."><button class="btn" onclick="sendMsg()">Send</button></div></div></div>';
   },
-
   control: function() {
     return '<div class="grid">' +
       metric("146", "Live trips", "GPS monitoring") +
@@ -254,9 +357,6 @@ function toast(t) {
   setTimeout(function() { d.remove(); }, 2600);
 }
 
-// Start the app
-renderNav();
-render();
-
-
+// ========== START ==========
+checkSession();
 

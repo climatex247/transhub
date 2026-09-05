@@ -4,19 +4,54 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#101827">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>TRANSHUB — Controlled by AI Agents</title>
   <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-  <div id="app">
-    <!-- Desktop Sidebar -->
+  <!-- LOGIN SCREEN -->
+  <div id="authScreen" class="auth-screen">
+    <div class="auth-card">
+      <div class="brand" style="color:#101827;text-align:center;margin-bottom:8px">TRANSHUB <span>AI</span></div>
+      <p class="muted" style="text-align:center;margin-bottom:20px">Controlled by AI Agents</p>
+
+      <div id="authTabs" style="display:flex;gap:8px;margin-bottom:18px">
+        <button class="btn" id="tabLogin" onclick="showLogin()" style="flex:1">Login</button>
+        <button class="btn secondary" id="tabRegister" onclick="showRegister()" style="flex:1">Register</button>
+      </div>
+
+      <div id="loginForm">
+        <label>Email</label>
+        <input class="input" id="loginEmail" type="email" placeholder="you@email.com">
+        <label>Password</label>
+        <input class="input" id="loginPassword" type="password" placeholder="Password">
+        <button class="btn" style="width:100%;margin-top:10px" onclick="doLogin()">Login</button>
+      </div>
+
+      <div id="registerForm" style="display:none">
+        <label>Full Name</label>
+        <input class="input" id="regName" placeholder="Your full name">
+        <label>Email</label>
+        <input class="input" id="regEmail" type="email" placeholder="you@email.com">
+        <label>Password</label>
+        <input class="input" id="regPassword" type="password" placeholder="Minimum 6 characters">
+        <button class="btn" style="width:100%;margin-top:10px" onclick="doRegister()">Create Account</button>
+      </div>
+
+      <p id="authMessage" class="muted" style="text-align:center;margin-top:15px;min-height:20px"></p>
+    </div>
+  </div>
+
+  <!-- MAIN APP (hidden until login) -->
+  <div id="app" style="display:none">
     <aside class="sidebar" id="sidebar">
       <div class="brand">TRANSHUB <span>AI</span></div>
       <p class="tagline">Controlled by AI Agents</p>
       <nav id="nav"></nav>
-      <div class="sidebar-footer">Prototype v0.2<br>Payments & GPS are demo-only.</div>
+      <div class="sidebar-footer">
+        <button class="btn secondary" style="width:100%;margin-bottom:10px" onclick="doLogout()">Logout</button>
+        Prototype v0.3
+      </div>
     </aside>
 
     <main class="main">
@@ -27,15 +62,12 @@
         </div>
         <button class="ai-btn" onclick="openAI()">✦ Ask AI</button>
       </header>
-
       <section id="content"></section>
     </main>
   </div>
 
-  <!-- Mobile Bottom Navigation -->
   <nav class="bottom-nav" id="bottomNav"></nav>
 
-  <!-- Modal -->
   <div id="modal" class="modal hidden">
     <div class="modal-card">
       <button class="close" onclick="closeModal()">×</button>
@@ -46,3 +78,4 @@
   <script src="app.js"></script>
 </body>
 </html>
+
